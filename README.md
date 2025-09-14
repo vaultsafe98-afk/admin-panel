@@ -1,46 +1,134 @@
-# Getting Started with Create React App
+# SafeVault Admin Panel
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern React.js admin dashboard for managing the SafeVault crypto wallet application.
+
+## Features
+
+- **Dark Crypto Theme** - Modern dark UI with neon accents
+- **Responsive Design** - Works on desktop, tablet, and mobile
+- **User Management** - View, block/unblock users, reset passwords
+- **Deposits Management** - Approve/reject deposit requests with image viewing
+- **Withdrawals Management** - Approve/reject withdrawal requests
+- **Notifications** - System notifications and custom messaging
+- **Settings** - Wallet address and admin profile management
+- **Real-time Updates** - Live data updates and status changes
+
+## Tech Stack
+
+- **React 18** with TypeScript
+- **Material-UI (MUI)** for components
+- **React Router** for navigation
+- **Axios** for API calls
+- **Context API** for state management
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 16+
+- npm or yarn
+- Backend API running on port 3000
+
+### Installation
+
+1. Clone the repository
+2. Navigate to the admin panel directory:
+
+   ```bash
+   cd Admin/admin-panel
+   ```
+
+3. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+4. Copy environment variables:
+
+   ```bash
+   cp env.example .env
+   ```
+
+5. Start the development server:
+
+   ```bash
+   npm start
+   ```
+
+6. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+### Demo Credentials
+
+- **Email:** admin@example.com
+- **Password:** admin123
+
+## Project Structure
+
+```
+src/
+├── components/          # Reusable UI components
+│   └── Layout.tsx      # Main layout with sidebar
+├── contexts/           # React contexts
+│   └── AuthContext.tsx # Authentication context
+├── pages/              # Page components
+│   ├── LoginPage.tsx
+│   ├── Dashboard.tsx
+│   ├── UsersPage.tsx
+│   ├── DepositsPage.tsx
+│   ├── WithdrawalsPage.tsx
+│   ├── NotificationsPage.tsx
+│   └── SettingsPage.tsx
+├── services/           # API services
+│   └── api.ts         # API client and types
+├── theme/             # Theme configuration
+│   ├── colors.ts      # Color palette
+│   └── index.ts       # MUI theme setup
+└── App.tsx            # Main app component
+```
 
 ## Available Scripts
 
-In the project directory, you can run:
+- `npm start` - Start development server
+- `npm build` - Build for production
+- `npm test` - Run tests
+- `npm run eject` - Eject from Create React App
 
-### `npm start`
+## API Integration
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+The admin panel connects to the backend API endpoints:
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+- `GET /admin/reports/summary` - Dashboard statistics
+- `GET /admin/users` - Users list
+- `PUT /admin/users/:id/block` - Block user
+- `PUT /admin/users/:id/unblock` - Unblock user
+- `GET /admin/deposits` - Deposits list
+- `PUT /admin/deposit/:id/approve` - Approve deposit
+- `PUT /admin/deposit/:id/reject` - Reject deposit
+- `GET /admin/withdrawals` - Withdrawals list
+- `PUT /admin/withdraw/:id/approve` - Approve withdrawal
+- `PUT /admin/withdraw/:id/reject` - Reject withdrawal
 
-### `npm test`
+## Development Status
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- ✅ Project setup and structure
+- ✅ Authentication system
+- ✅ Layout and navigation
+- ✅ Dashboard with statistics
+- 🔄 Users management (in progress)
+- 🔄 Deposits management (in progress)
+- 🔄 Withdrawals management (in progress)
+- 🔄 Notifications management (in progress)
+- 🔄 Settings page (in progress)
 
-### `npm run build`
+## Contributing
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## License
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+MIT License - see LICENSE file for details

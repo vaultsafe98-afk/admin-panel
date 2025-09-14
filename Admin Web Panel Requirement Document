@@ -1,0 +1,141 @@
+Perfect 👍 Now let’s prepare the **Admin Web Panel Requirement Document (for React.js Developer)**.
+
+---
+
+# 🖥️ Admin Web Panel Requirement Document
+
+**Project Title:** Crypto Wallet Admin Dashboard
+**Platform:** React.js (Web App)
+**Theme:** Dark theme, crypto-style, matching mobile app
+
+---
+
+## 1. Navigation Structure (Sidebar Menu)
+
+1. **Dashboard (Reports & Analytics)**
+2. **Users Management**
+3. **Deposits Management**
+4. **Withdrawals Management**
+5. **Notifications**
+6. **Settings**
+
+---
+
+## 2. Screens & Features
+
+### 2.1 Login Screen
+
+* Fields: Email, Password
+* Button: **Login**
+* Authentication via **JWT**
+* Role: **Admin only**
+
+---
+
+### 2.2 Dashboard (Home)
+
+* Display summary statistics:
+
+  * Total Users
+  * Total Deposits (Approved)
+  * Total Withdrawals (Approved)
+  * Total Profits Distributed
+* Graphs (Optional for future): Daily deposits, withdrawals, user growth
+
+---
+
+### 2.3 Users Management
+
+* List of all users (table view)
+
+  * Columns: Profile Image, Name, Email, Deposit Amount, Profit Amount, Total Balance, Status (Active/Blocked)
+* Actions:
+
+  * **Block/Unblock user**
+  * **Reset password**
+  * **View user details** (all transactions, balances, notifications)
+
+---
+
+### 2.4 Deposits Management
+
+* List of all deposit requests (table view)
+
+  * Columns: User, Amount, Screenshot (click to view from AWS S3), Status (Pending/Approved/Rejected), Date
+* Actions:
+
+  * **Approve** → Update user’s wallet (deposit amount & total balance)
+  * **Reject** → Mark as rejected & notify user
+
+---
+
+### 2.5 Withdrawals Management
+
+* List of all withdrawal requests (table view)
+
+  * Columns: User, Amount, Platform (Binance/Trust Wallet), Wallet Address, Status (Pending/Approved/Rejected), Date
+* Actions:
+
+  * **Approve** → Mark request approved (admin processes manually outside system)
+  * **Reject** → Mark as rejected & notify user
+
+---
+
+### 2.6 Notifications
+
+* List of system-generated notifications
+* Ability to send **custom notifications** to specific users (optional future feature)
+
+---
+
+### 2.7 Settings
+
+* Update system wallet address (the account where users send deposits)
+* Update admin profile & password
+
+---
+
+## 3. UI/UX Guidelines
+
+* **Dark theme crypto-style**
+* Sidebar navigation with icons
+* Data tables with filters, pagination, search
+* Neon highlights for buttons (Approve, Reject, Block, etc.)
+* Modals for confirmations (e.g., "Are you sure you want to reject this deposit?")
+
+---
+
+## 4. APIs Used
+
+* Authentication: `/auth/login`
+* Users: `/admin/users` (list, block/unblock, reset password)
+* Deposits: `/admin/deposits`, `/admin/deposit/:id/approve`, `/admin/deposit/:id/reject`
+* Withdrawals: `/admin/withdrawals`, `/admin/withdraw/:id/approve`, `/admin/withdraw/:id/reject`
+* Reports: `/admin/reports/summary`, `/admin/reports/users`
+* Notifications: `/notifications`
+
+---
+
+## 5. Non-Functional Requirements
+
+* Must be responsive (desktop, tablet, mobile view).
+* Role-based access (only admins).
+* Fast data loading (pagination + search filters).
+* Secure storage of JWT tokens in HttpOnly cookies or local storage.
+
+---
+
+✅ That completes the **Admin Panel Requirement Document** for the React.js developer.
+
+---
+
+👉 Now you have 4 separate requirement documents:
+
+1. **SRS**
+2. **Mobile App (React Native)**
+3. **Backend (Node.js)**
+4. **Admin Panel (React.js)**
+
+Do you also want me to prepare a **consolidated high-level architecture diagram (in text format)** so all developers clearly see how app, backend, DB, and admin panel connect?
+
+
