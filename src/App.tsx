@@ -9,6 +9,7 @@ import { theme } from './theme';
 import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 import UsersPage from './pages/UsersPage';
+import PendingUsersPage from './pages/PendingUsersPage';
 import DepositsPage from './pages/DepositsPage';
 import WithdrawalsPage from './pages/WithdrawalsPage';
 import NotificationsPage from './pages/NotificationsPage';
@@ -19,10 +20,23 @@ import Layout from './components/Layout';
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
 
+  // Show loading while checking authentication
   if (isLoading) {
-    return <div>Loading...</div>; // You can replace this with a proper loading component
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        backgroundColor: '#0a0a0a',
+        color: '#00ff88'
+      }}>
+        <div>Loading...</div>
+      </div>
+    );
   }
 
+  // Only redirect to login if we're done loading and not authenticated
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
 };
 
@@ -40,6 +54,7 @@ const AppRoutes: React.FC = () => {
                 <Route path="/" element={<Navigate to="/dashboard" />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/users" element={<UsersPage />} />
+                <Route path="/pending-users" element={<PendingUsersPage />} />
                 <Route path="/deposits" element={<DepositsPage />} />
                 <Route path="/withdrawals" element={<WithdrawalsPage />} />
                 <Route path="/notifications" element={<NotificationsPage />} />

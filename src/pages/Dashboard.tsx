@@ -61,7 +61,6 @@ const Dashboard: React.FC = () => {
     totalUsers: 0,
     totalDeposits: 0,
     totalWithdrawals: 0,
-    totalProfits: 0,
     pendingDeposits: 0,
     pendingWithdrawals: 0,
   });
@@ -124,25 +123,25 @@ const Dashboard: React.FC = () => {
       >
         <StatCard
           title="Total Users"
-          value={stats.totalUsers.toLocaleString()}
+          value={(stats.totalUsers || 0).toLocaleString()}
           icon={<People />}
           color="#00ff88"
         />
         <StatCard
           title="Total Deposits"
-          value={`$${stats.totalDeposits.toLocaleString()}`}
+          value={`$${(stats.totalDeposits || 0).toLocaleString()}`}
           icon={<AccountBalance />}
           color="#00bfff"
         />
         <StatCard
           title="Total Withdrawals"
-          value={`$${stats.totalWithdrawals.toLocaleString()}`}
+          value={`$${(stats.totalWithdrawals || 0).toLocaleString()}`}
           icon={<TrendingUp />}
           color="#ff8c00"
         />
         <StatCard
-          title="Total Profits"
-          value={`$${stats.totalProfits.toLocaleString()}`}
+          title="Pending Deposits"
+          value={(stats.pendingDeposits || 0).toLocaleString()}
           icon={<AttachMoney />}
           color="#8a2be2"
         />

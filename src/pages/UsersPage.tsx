@@ -31,6 +31,7 @@ import {
   Refresh,
   LockReset,
   Visibility,
+  AccountBalance,
 } from '@mui/icons-material';
 import { adminApi } from '../services/api';
 
@@ -56,8 +57,9 @@ const UsersPage: React.FC = () => {
   const [rowsPerPage, setRowsPerPage] = useState(20);
   const [totalUsers, setTotalUsers] = useState(0);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [actionDialog, setActionDialog] = useState<'block' | 'unblock' | 'reset' | null>(null);
+  const [actionDialog, setActionDialog] = useState<'block' | 'unblock' | 'reset' | 'balance' | null>(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
+  const [balanceAdjustment, setBalanceAdjustment] = useState({ newBalance: '', reason: '' });
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -117,6 +119,39 @@ const UsersPage: React.FC = () => {
     } catch (err: any) {
       console.error(`Failed to ${action} user:`, err);
       setSnackbar({ open: true, message: `Failed to ${action} user`, severity: 'error' });
+    }
+  };
+
+  const handleBalanceAdjustment = async () => {
+    if (!selectedUser || !balanceAdjustment.newBalance || !balanceAdjustment.reason) return;
+
+    try {
+      const newBalance = parseFloat(balanceAdjustment.newBalance);
+      if (isNaN(newBalance) || newBalance < 0) {
+        setSnackbar({ open: true, message: 'Please enter a valid balance amount', severity: 'error' });
+        return;
+      }
+
+      const response = await adminApi.adjustUserBalance(selectedUser.id, newBalance, balanceAdjustment.reason);
+      const data = response.data as any;
+      
+      setSnackbar({ 
+        open: true, 
+        message: `Balance adjusted successfully. Change: $${data.user.balanceChange.toFixed(2)}`, 
+        severity: 'success' 
+      });
+      
+      setActionDialog(null);
+      setSelectedUser(null);
+      setBalanceAdjustment({ newBalance: '', reason: '' });
+      fetchUsers();
+    } catch (err: any) {
+      console.error('Failed to adjust user balance:', err);
+      setSnackbar({ 
+        open: true, 
+        message: err.response?.data?.message || 'Failed to adjust user balance', 
+        severity: 'error' 
+      });
     }
   };
 
@@ -213,8 +248,7 @@ const UsersPage: React.FC = () => {
               <TableRow sx={{ backgroundColor: 'rgba(0, 255, 136, 0.1)' }}>
                 <TableCell sx={{ color: '#00ff88', fontWeight: 'bold' }}>Name</TableCell>
                 <TableCell sx={{ color: '#00ff88', fontWeight: 'bold' }}>Email</TableCell>
-                <TableCell sx={{ color: '#00ff88', fontWeight: 'bold' }}>Deposit</TableCell>
-                <TableCell sx={{ color: '#00ff88', fontWeight: 'bold' }}>Profit</TableCell>
+                <TableCell sx={{ color: '#00ff88', fontWeight: 'bold' }}>Balance</TableCell>
                 <TableCell sx={{ color: '#00ff88', fontWeight: 'bold' }}>Total</TableCell>
                 <TableCell sx={{ color: '#00ff88', fontWeight: 'bold' }}>Status</TableCell>
                 <TableCell sx={{ color: '#00ff88', fontWeight: 'bold' }}>Joined</TableCell>
@@ -229,7 +263,6 @@ const UsersPage: React.FC = () => {
                   </TableCell>
                   <TableCell sx={{ color: 'white' }}>{user.email}</TableCell>
                   <TableCell sx={{ color: 'white' }}>{formatCurrency(user.depositAmount)}</TableCell>
-                  <TableCell sx={{ color: 'white' }}>{formatCurrency(user.profitAmount)}</TableCell>
                   <TableCell sx={{ color: 'white' }}>{formatCurrency(user.totalAmount)}</TableCell>
                   <TableCell>
                     <Chip
@@ -287,6 +320,20 @@ const UsersPage: React.FC = () => {
                           <LockReset />
                         </IconButton>
                       </Tooltip>
+                      
+                      <Tooltip title="Adjust Balance">
+                        <IconButton
+                          size="small"
+                          sx={{ color: '#9370db' }}
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setBalanceAdjustment({ newBalance: user.depositAmount.toString(), reason: '' });
+                            setActionDialog('balance');
+                          }}
+                        >
+                          <AccountBalance />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                   </TableCell>
                 </TableRow>
@@ -327,31 +374,89 @@ const UsersPage: React.FC = () => {
         }}
       >
         <DialogTitle sx={{ color: '#00ff88' }}>
-          Confirm Action
+          {actionDialog === 'balance' ? 'Adjust User Balance' : 'Confirm Action'}
         </DialogTitle>
         <DialogContent>
-          <Typography sx={{ color: 'white' }}>
-            Are you sure you want to {actionDialog} user {selectedUser?.firstName} {selectedUser?.lastName}?
-          </Typography>
+          {actionDialog === 'balance' ? (
+            <Box sx={{ mt: 2 }}>
+              <Typography sx={{ color: 'white', mb: 2 }}>
+                Adjust balance for {selectedUser?.firstName} {selectedUser?.lastName}
+              </Typography>
+              <Typography sx={{ color: '#ccc', mb: 2, fontSize: '0.9rem' }}>
+                Current Balance: {formatCurrency(selectedUser?.depositAmount || 0)}
+              </Typography>
+              <TextField
+                fullWidth
+                label="New Balance"
+                type="number"
+                value={balanceAdjustment.newBalance}
+                onChange={(e) => setBalanceAdjustment({ ...balanceAdjustment, newBalance: e.target.value })}
+                sx={{
+                  mb: 2,
+                  '& .MuiOutlinedInput-root': {
+                    color: 'white',
+                    '& fieldset': { borderColor: '#555' },
+                    '&:hover fieldset': { borderColor: '#00ff88' },
+                    '&.Mui-focused fieldset': { borderColor: '#00ff88' },
+                  },
+                  '& .MuiInputLabel-root': { color: '#ccc' },
+                  '& .MuiInputLabel-root.Mui-focused': { color: '#00ff88' },
+                }}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start" sx={{ color: '#ccc' }}>$</InputAdornment>,
+                }}
+              />
+              <TextField
+                fullWidth
+                label="Reason for Adjustment"
+                multiline
+                rows={3}
+                value={balanceAdjustment.reason}
+                onChange={(e) => setBalanceAdjustment({ ...balanceAdjustment, reason: e.target.value })}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    color: 'white',
+                    '& fieldset': { borderColor: '#555' },
+                    '&:hover fieldset': { borderColor: '#00ff88' },
+                    '&.Mui-focused fieldset': { borderColor: '#00ff88' },
+                  },
+                  '& .MuiInputLabel-root': { color: '#ccc' },
+                  '& .MuiInputLabel-root.Mui-focused': { color: '#00ff88' },
+                }}
+              />
+            </Box>
+          ) : (
+            <Typography sx={{ color: 'white' }}>
+              Are you sure you want to {actionDialog} user {selectedUser?.firstName} {selectedUser?.lastName}?
+            </Typography>
+          )}
         </DialogContent>
         <DialogActions>
           <Button
-            onClick={() => setActionDialog(null)}
+            onClick={() => {
+              setActionDialog(null);
+              setBalanceAdjustment({ newBalance: '', reason: '' });
+            }}
             sx={{ color: 'white' }}
           >
             Cancel
           </Button>
           <Button
-            onClick={() => handleUserAction(actionDialog!)}
+            onClick={() => actionDialog === 'balance' ? handleBalanceAdjustment() : handleUserAction(actionDialog!)}
             variant="contained"
+            disabled={actionDialog === 'balance' && (!balanceAdjustment.newBalance || !balanceAdjustment.reason)}
             sx={{
               backgroundColor: actionDialog === 'block' ? '#ff4444' : '#00ff88',
               '&:hover': {
                 backgroundColor: actionDialog === 'block' ? '#ff6666' : '#00ffaa',
               },
+              '&:disabled': {
+                backgroundColor: '#555',
+                color: '#999',
+              },
             }}
           >
-            Confirm
+            {actionDialog === 'balance' ? 'Adjust Balance' : 'Confirm'}
           </Button>
         </DialogActions>
       </Dialog>

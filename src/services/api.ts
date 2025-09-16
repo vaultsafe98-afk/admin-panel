@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // API Configuration
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://backend-5f5u.onrender.com/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
 console.log(API_BASE_URL);
 // Create axios instance
 const api = axios.create({
@@ -47,7 +47,6 @@ export interface AdminUser {
   email: string;
   profileImage?: string;
   depositAmount: number;
-  profitAmount: number;
   totalAmount: number;
   status: 'active' | 'blocked';
   role: string;
@@ -105,7 +104,6 @@ export interface DashboardStats {
   totalUsers: number;
   totalDeposits: number;
   totalWithdrawals: number;
-  totalProfits: number;
   pendingDeposits: number;
   pendingWithdrawals: number;
 }
@@ -119,7 +117,7 @@ export const adminApi = {
 
   // Dashboard
   getDashboardStats: async () => {
-    return api.get('/admin/reports/summary');
+    return api.get('/admin/dashboard-stats');
   },
 
   // Users Management
@@ -215,6 +213,22 @@ export const adminApi = {
   },
   updateAdminProfile: async (data: { firstName?: string; lastName?: string; email?: string; password?: string }) => {
     return api.put('/admin/profile', data);
+  },
+
+  // Balance Adjustments
+  adjustUserBalance: async (userId: string, newBalance: number, reason: string) => {
+    return api.put(`/admin/users/${userId}/balance`, { newBalance, reason });
+  },
+
+  // Account Approval
+  getPendingUsers: async () => {
+    return api.get('/admin/pending-users');
+  },
+  approveUser: async (userId: string) => {
+    return api.put(`/admin/users/${userId}/approve`);
+  },
+  rejectUser: async (userId: string, reason: string) => {
+    return api.put(`/admin/users/${userId}/reject`, { reason });
   },
 };
 

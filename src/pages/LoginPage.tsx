@@ -11,6 +11,7 @@ import {
   Container,
 } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
+import SafeVaultLogo from '../components/SafeVaultLogo';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -59,6 +60,7 @@ const LoginPage: React.FC = () => {
         >
           <CardContent sx={{ p: 4 }}>
             <Box textAlign="center" mb={4}>
+              <SafeVaultLogo size="large" showText={false} sx={{ mb: 3 }} />
               <Typography
                 variant="h4"
                 component="h1"

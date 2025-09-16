@@ -21,10 +21,12 @@ import {
   Badge,
   ListItemAvatar,
 } from '@mui/material';
+import SafeVaultLogo from './SafeVaultLogo';
 import {
   Menu as MenuIcon,
   Dashboard,
   People,
+  PendingActions,
   AccountBalance,
   TrendingUp,
   Notifications,
@@ -56,6 +58,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const menuItems = [
     { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
     { text: 'Users', icon: <People />, path: '/users' },
+    { text: 'Pending Users', icon: <PendingActions />, path: '/pending-users' },
     { text: 'Deposits', icon: <AccountBalance />, path: '/deposits' },
     { text: 'Withdrawals', icon: <TrendingUp />, path: '/withdrawals' },
     { text: 'Notifications', icon: <Notifications />, path: '/notifications' },
@@ -141,17 +144,19 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const drawer = (
     <Box>
       <Toolbar>
+        <SafeVaultLogo size="medium" showText={true} sx={{ width: '100%' }} />
+      </Toolbar>
+      <Toolbar sx={{ minHeight: '16px !important' }}>
         <Typography
-          variant="h6"
-          noWrap
-          component="div"
+          variant="body2"
           sx={{
-            color: '#00ff88',
-            fontWeight: 'bold',
-            fontSize: '1.5rem',
+            color: '#888',
+            fontSize: '0.875rem',
+            textAlign: 'center',
+            width: '100%',
           }}
         >
-          SafeVault
+          Admin Panel
         </Typography>
       </Toolbar>
       <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />

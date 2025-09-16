@@ -44,11 +44,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (token) {
         // Get admin profile from backend
         const response = await adminApi.getAdminProfile();
-        setUser((response.data as any).user);
+        const userData = response.data as AdminUser; // The user data is directly in response.data, not response.data.user
+        setUser(userData);
+      } else {
+        console.log('No token found in localStorage');
       }
     } catch (error) {
       console.error('Token verification failed:', error);
       localStorage.removeItem('adminToken');
+      setUser(null);
     } finally {
       setIsLoading(false);
     }
@@ -61,8 +65,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await adminApi.login(email, password);
       
       // Store token and user data
-      localStorage.setItem('adminToken', (response.data as any).token);
-      setUser((response.data as any).user);
+      const token = (response.data as any).token;
+      const user = (response.data as any).user;
+      
+      localStorage.setItem('adminToken', token);
+      setUser(user);
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
