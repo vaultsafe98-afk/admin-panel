@@ -370,36 +370,49 @@ const DepositsPage: React.FC = () => {
                       Open in new tab
                     </a>
                   </Typography>
-                  <img
-                    src={selectedDeposit.screenshotUrl}
-                    alt="Deposit Screenshot"
-                    style={{
-                      maxWidth: '100%',
-                      height: 'auto',
-                      border: '1px solid rgba(0, 255, 136, 0.3)',
+                  {selectedDeposit.screenshotUrl ? (
+                    <img
+                      src={selectedDeposit.screenshotUrl}
+                      alt="Deposit Screenshot"
+                      style={{
+                        maxWidth: '100%',
+                        height: 'auto',
+                        border: '1px solid rgba(0, 255, 136, 0.3)',
+                        borderRadius: '4px',
+                      }}
+                      onError={(e) => {
+                        console.error('Failed to load screenshot:', selectedDeposit.screenshotUrl);
+                        e.currentTarget.style.display = 'none';
+                        // Show error message
+                        const errorDiv = document.createElement('div');
+                        errorDiv.innerHTML = `
+                          <div style="
+                            padding: 20px;
+                            text-align: center;
+                            color: #ff6b6b;
+                            border: 1px solid #ff6b6b;
+                            border-radius: 4px;
+                            background: rgba(255, 107, 107, 0.1);
+                          ">
+                            <strong>Screenshot not available</strong><br/>
+                            <small>URL: ${selectedDeposit.screenshotUrl}</small>
+                          </div>
+                        `;
+                        e.currentTarget.parentNode?.appendChild(errorDiv);
+                      }}
+                    />
+                  ) : (
+                    <div style={{
+                      padding: '20px',
+                      textAlign: 'center',
+                      color: '#ff6b6b',
+                      border: '1px solid #ff6b6b',
                       borderRadius: '4px',
-                    }}
-                    onError={(e) => {
-                      console.error('Failed to load screenshot:', selectedDeposit.screenshotUrl);
-                      e.currentTarget.style.display = 'none';
-                      // Show error message
-                      const errorDiv = document.createElement('div');
-                      errorDiv.innerHTML = `
-                        <div style="
-                          padding: 20px;
-                          text-align: center;
-                          color: #ff6b6b;
-                          border: 1px solid #ff6b6b;
-                          border-radius: 4px;
-                          background: rgba(255, 107, 107, 0.1);
-                        ">
-                          <strong>Screenshot not available</strong><br/>
-                          <small>URL: ${selectedDeposit.screenshotUrl}</small>
-                        </div>
-                      `;
-                      e.currentTarget.parentNode?.appendChild(errorDiv);
-                    }}
-                  />
+                      background: 'rgba(255, 107, 107, 0.1)',
+                    }}>
+                      <strong>No screenshot provided</strong>
+                    </div>
+                  )}
                   {selectedDeposit.adminNotes && (
                     <Typography sx={{ color: 'white', mt: 2 }}>
                       <strong>Admin Notes:</strong> {selectedDeposit.adminNotes}
