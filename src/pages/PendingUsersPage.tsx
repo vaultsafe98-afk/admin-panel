@@ -48,6 +48,7 @@ const PendingUsersPage: React.FC = () => {
   const [actionDialog, setActionDialog] = useState<'approve' | 'reject' | null>(null);
   const [selectedUser, setSelectedUser] = useState<PendingUser | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
+  const [trcAddress, setTrcAddress] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
@@ -69,19 +70,27 @@ const PendingUsersPage: React.FC = () => {
   };
 
   const handleApprove = async () => {
-    if (!selectedUser) return;
+    if (!selectedUser || !trcAddress) return;
 
     try {
+      // Validate TRC address format
+      if (!trcAddress.startsWith('T') || trcAddress.length !== 34) {
+        setError('Invalid TRC address format. Must start with T and be 34 characters long');
+        return;
+      }
+
       setActionLoading(true);
-      await adminApi.approveUser(selectedUser.id);
+      await adminApi.approveUser(selectedUser.id, trcAddress);
       
       // Remove user from pending list
       setPendingUsers(prev => prev.filter(user => user.id !== selectedUser.id));
       setActionDialog(null);
       setSelectedUser(null);
+      setTrcAddress('');
+      setError(null);
     } catch (err: any) {
       console.error('Failed to approve user:', err);
-      setError('Failed to approve user');
+      setError(err.response?.data?.message || 'Failed to approve user');
     } finally {
       setActionLoading(false);
     }
@@ -272,10 +281,33 @@ const PendingUsersPage: React.FC = () => {
         </DialogTitle>
         <DialogContent>
           {actionDialog === 'approve' ? (
-            <Typography sx={{ color: 'white' }}>
-              Are you sure you want to approve the account for {selectedUser?.firstName} {selectedUser?.lastName}?
-              This will allow them to access all features of SafeVault.
-            </Typography>
+            <Box sx={{ mt: 2 }}>
+              <Typography sx={{ color: 'white', mb: 2 }}>
+                Approve account for {selectedUser?.firstName} {selectedUser?.lastName}
+              </Typography>
+              <Typography sx={{ color: '#ccc', mb: 2, fontSize: '0.9rem' }}>
+                Email: {selectedUser?.email}
+              </Typography>
+              <TextField
+                fullWidth
+                label="TRC Address (USDT Deposit Address)"
+                value={trcAddress}
+                onChange={(e) => setTrcAddress(e.target.value)}
+                placeholder="TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    color: 'white',
+                    '& fieldset': { borderColor: '#555' },
+                    '&:hover fieldset': { borderColor: '#00ff88' },
+                    '&.Mui-focused fieldset': { borderColor: '#00ff88' },
+                  },
+                  '& .MuiInputLabel-root': { color: '#ccc' },
+                  '& .MuiInputLabel-root.Mui-focused': { color: '#00ff88' },
+                }}
+                helperText="Enter a TRC-20 address for this user's USDT deposits"
+                FormHelperTextProps={{ sx: { color: '#999' } }}
+              />
+            </Box>
           ) : (
             <Box sx={{ mt: 2 }}>
               <Typography sx={{ color: 'white', mb: 2 }}>
@@ -308,6 +340,7 @@ const PendingUsersPage: React.FC = () => {
               setActionDialog(null);
               setSelectedUser(null);
               setRejectionReason('');
+              setTrcAddress('');
             }}
             sx={{ color: 'white' }}
           >
@@ -316,7 +349,7 @@ const PendingUsersPage: React.FC = () => {
           <Button
             onClick={actionDialog === 'approve' ? handleApprove : handleReject}
             variant="contained"
-            disabled={actionLoading || (actionDialog === 'reject' && !rejectionReason.trim())}
+            disabled={actionLoading || (actionDialog === 'reject' && !rejectionReason.trim()) || (actionDialog === 'approve' && !trcAddress.trim())}
             sx={{
               backgroundColor: actionDialog === 'approve' ? '#4caf50' : '#f44336',
               '&:hover': {

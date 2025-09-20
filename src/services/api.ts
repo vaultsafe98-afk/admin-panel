@@ -220,12 +220,17 @@ export const adminApi = {
     return api.put(`/admin/users/${userId}/balance`, { newBalance, reason });
   },
 
+  // TRC Address Management
+  updateUserTrcAddress: async (userId: string, trcAddress: string) => {
+    return api.put(`/admin/users/${userId}/trc-address`, { trcAddress });
+  },
+
   // Account Approval
   getPendingUsers: async () => {
     return api.get('/admin/pending-users');
   },
-  approveUser: async (userId: string) => {
-    return api.put(`/admin/users/${userId}/approve`);
+  approveUser: async (userId: string, trcAddress: string) => {
+    return api.put(`/admin/users/${userId}/approve`, { trcAddress });
   },
   rejectUser: async (userId: string, reason: string) => {
     return api.put(`/admin/users/${userId}/reject`, { reason });

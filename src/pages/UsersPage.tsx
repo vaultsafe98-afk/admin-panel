@@ -32,6 +32,7 @@ import {
   LockReset,
   Visibility,
   AccountBalance,
+  Edit,
 } from '@mui/icons-material';
 import { adminApi } from '../services/api';
 
@@ -46,6 +47,7 @@ interface User {
   status: 'active' | 'blocked';
   role: string;
   createdAt: string;
+  trcAddress?: string;
 }
 
 const UsersPage: React.FC = () => {
@@ -57,9 +59,10 @@ const UsersPage: React.FC = () => {
   const [rowsPerPage, setRowsPerPage] = useState(20);
   const [totalUsers, setTotalUsers] = useState(0);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [actionDialog, setActionDialog] = useState<'block' | 'unblock' | 'reset' | 'balance' | null>(null);
+  const [actionDialog, setActionDialog] = useState<'block' | 'unblock' | 'reset' | 'balance' | 'editTrc' | null>(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
   const [balanceAdjustment, setBalanceAdjustment] = useState({ newBalance: '', reason: '' });
+  const [trcAddressData, setTrcAddressData] = useState({ trcAddress: '' });
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -152,6 +155,36 @@ const UsersPage: React.FC = () => {
         message: err.response?.data?.message || 'Failed to adjust user balance', 
         severity: 'error' 
       });
+    }
+  };
+
+  const handleTrcAddressUpdate = async () => {
+    if (!selectedUser || !trcAddressData.trcAddress) return;
+
+    try {
+      // Validate TRC address format
+      if (!trcAddressData.trcAddress.startsWith('T') || trcAddressData.trcAddress.length !== 34) {
+        setSnackbar({ open: true, message: 'Invalid TRC address format. Must start with T and be 34 characters long', severity: 'error' });
+        return;
+      }
+
+      // Call API to update TRC address
+      const response = await adminApi.updateUserTrcAddress(selectedUser.id, trcAddressData.trcAddress);
+      const data = response.data as any;
+      
+      setSnackbar({ 
+        open: true, 
+        message: `TRC Address updated successfully: ${data.user.trcAddress}`, 
+        severity: 'success' 
+      });
+      
+      setActionDialog(null);
+      setSelectedUser(null);
+      setTrcAddressData({ trcAddress: '' });
+      fetchUsers();
+    } catch (err: any) {
+      console.error('Failed to update TRC address:', err);
+      setSnackbar({ open: true, message: err.response?.data?.message || 'Failed to update TRC address', severity: 'error' });
     }
   };
 
@@ -250,6 +283,7 @@ const UsersPage: React.FC = () => {
                 <TableCell sx={{ color: '#00ff88', fontWeight: 'bold' }}>Email</TableCell>
                 <TableCell sx={{ color: '#00ff88', fontWeight: 'bold' }}>Balance</TableCell>
                 <TableCell sx={{ color: '#00ff88', fontWeight: 'bold' }}>Total</TableCell>
+                <TableCell sx={{ color: '#00ff88', fontWeight: 'bold' }}>TRC Address</TableCell>
                 <TableCell sx={{ color: '#00ff88', fontWeight: 'bold' }}>Status</TableCell>
                 <TableCell sx={{ color: '#00ff88', fontWeight: 'bold' }}>Joined</TableCell>
                 <TableCell sx={{ color: '#00ff88', fontWeight: 'bold' }}>Actions</TableCell>
@@ -264,6 +298,22 @@ const UsersPage: React.FC = () => {
                   <TableCell sx={{ color: 'white' }}>{user.email}</TableCell>
                   <TableCell sx={{ color: 'white' }}>{formatCurrency(user.depositAmount)}</TableCell>
                   <TableCell sx={{ color: 'white' }}>{formatCurrency(user.totalAmount)}</TableCell>
+                  <TableCell sx={{ color: 'white', maxWidth: 200 }}>
+                    {user.trcAddress ? (
+                      <Box sx={{ 
+                        fontFamily: 'monospace', 
+                        fontSize: '0.75rem',
+                        wordBreak: 'break-all',
+                        color: '#00ff88'
+                      }}>
+                        {user.trcAddress}
+                      </Box>
+                    ) : (
+                      <Box sx={{ color: '#666', fontStyle: 'italic' }}>
+                        Not assigned
+                      </Box>
+                    )}
+                  </TableCell>
                   <TableCell>
                     <Chip
                       label={user.status}
@@ -334,6 +384,20 @@ const UsersPage: React.FC = () => {
                           <AccountBalance />
                         </IconButton>
                       </Tooltip>
+                      
+                      <Tooltip title="Edit TRC Address">
+                        <IconButton
+                          size="small"
+                          sx={{ color: '#00ff88' }}
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setTrcAddressData({ trcAddress: user.trcAddress || '' });
+                            setActionDialog('editTrc');
+                          }}
+                        >
+                          <Edit />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                   </TableCell>
                 </TableRow>
@@ -374,7 +438,8 @@ const UsersPage: React.FC = () => {
         }}
       >
         <DialogTitle sx={{ color: '#00ff88' }}>
-          {actionDialog === 'balance' ? 'Adjust User Balance' : 'Confirm Action'}
+          {actionDialog === 'balance' ? 'Adjust User Balance' : 
+           actionDialog === 'editTrc' ? 'Edit TRC Address' : 'Confirm Action'}
         </DialogTitle>
         <DialogContent>
           {actionDialog === 'balance' ? (
@@ -425,6 +490,37 @@ const UsersPage: React.FC = () => {
                 }}
               />
             </Box>
+          ) : actionDialog === 'editTrc' ? (
+            <Box sx={{ mt: 2 }}>
+              <Typography sx={{ color: 'white', mb: 2 }}>
+                Edit TRC Address for {selectedUser?.firstName} {selectedUser?.lastName}
+              </Typography>
+              <Typography sx={{ color: '#ccc', mb: 2, fontSize: '0.9rem' }}>
+                Email: {selectedUser?.email}
+              </Typography>
+              <Typography sx={{ color: '#ccc', mb: 2, fontSize: '0.9rem' }}>
+                Current TRC Address: {selectedUser?.trcAddress || 'Not assigned'}
+              </Typography>
+              <TextField
+                fullWidth
+                label="New TRC Address (USDT Deposit Address)"
+                value={trcAddressData.trcAddress}
+                onChange={(e) => setTrcAddressData({ ...trcAddressData, trcAddress: e.target.value })}
+                placeholder="TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    color: 'white',
+                    '& fieldset': { borderColor: '#555' },
+                    '&:hover fieldset': { borderColor: '#00ff88' },
+                    '&.Mui-focused fieldset': { borderColor: '#00ff88' },
+                  },
+                  '& .MuiInputLabel-root': { color: '#ccc' },
+                  '& .MuiInputLabel-root.Mui-focused': { color: '#00ff88' },
+                }}
+                helperText="Enter a TRC-20 address for this user's USDT deposits"
+                FormHelperTextProps={{ sx: { color: '#999' } }}
+              />
+            </Box>
           ) : (
             <Typography sx={{ color: 'white' }}>
               Are you sure you want to {actionDialog} user {selectedUser?.firstName} {selectedUser?.lastName}?
@@ -436,15 +532,27 @@ const UsersPage: React.FC = () => {
             onClick={() => {
               setActionDialog(null);
               setBalanceAdjustment({ newBalance: '', reason: '' });
+              setTrcAddressData({ trcAddress: '' });
             }}
             sx={{ color: 'white' }}
           >
             Cancel
           </Button>
           <Button
-            onClick={() => actionDialog === 'balance' ? handleBalanceAdjustment() : handleUserAction(actionDialog!)}
+            onClick={() => {
+              if (actionDialog === 'balance') {
+                handleBalanceAdjustment();
+              } else if (actionDialog === 'editTrc') {
+                handleTrcAddressUpdate();
+              } else {
+                handleUserAction(actionDialog!);
+              }
+            }}
             variant="contained"
-            disabled={actionDialog === 'balance' && (!balanceAdjustment.newBalance || !balanceAdjustment.reason)}
+            disabled={
+              (actionDialog === 'balance' && (!balanceAdjustment.newBalance || !balanceAdjustment.reason)) ||
+              (actionDialog === 'editTrc' && !trcAddressData.trcAddress)
+            }
             sx={{
               backgroundColor: actionDialog === 'block' ? '#ff4444' : '#00ff88',
               '&:hover': {
@@ -456,7 +564,8 @@ const UsersPage: React.FC = () => {
               },
             }}
           >
-            {actionDialog === 'balance' ? 'Adjust Balance' : 'Confirm'}
+            {actionDialog === 'balance' ? 'Adjust Balance' : 
+             actionDialog === 'editTrc' ? 'Update TRC Address' : 'Confirm'}
           </Button>
         </DialogActions>
       </Dialog>
